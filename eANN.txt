@@ -1,0 +1,885 @@
+<----- ANN1 ----->
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-5, 5, 100)
+
+def sigmoidfunc(x):
+    return 1 / (1 + np.exp(-x))
+
+y_sigmoidfunc = sigmoidfunc(x)
+
+plt.subplot(2, 2, 1)
+plt.plot(x, y_sigmoidfunc, label='Sigmoid')
+plt.title('Sigmoid Activation Function')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+def relufunc(x):
+    return np.maximum(0, x)
+
+y_relufunc = relufunc(x)
+
+plt.subplot(2, 2, 1)
+plt.plot(x, y_relufunc, label='RELU')
+plt.title('RELU Activation Function')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+def tanhfunc(x):
+    return np.tanh(x)
+
+y_tanhfunc = tanhfunc(x)
+
+plt.subplot(2, 2, 1)
+plt.plot(x, y_tanhfunc, label='Tanh')
+plt.title('Hyperbolic Tangent (Tanh) Activation Function')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+<----- ANN2 ----->
+import numpy as np
+
+class McCullochPittsNeuron:
+    def __init__(self, weights, threshold):
+        self.weights = weights
+        self.threshold = threshold
+
+    def activate(self, inputs):
+        weighted_sum = sum(w*x for w, x in zip(self.weights, inputs))
+        return int(weighted_sum >= self.threshold)
+        # weighted_sum = np.dot(inputs, self.weights)
+        # return 1 if weighted_sum >= self.threshold else 0
+
+def ANDNOT(x1, x2):
+    weights = np.array([1, -1])
+    threshold = 1
+    neuron = McCullochPittsNeuron(weights, threshold)
+    return neuron.activate([x1, x2])
+
+print("ANDNOT(0, 0) =", ANDNOT(0, 0))
+print("ANDNOT(0, 1) =", ANDNOT(0, 1))
+print("ANDNOT(1, 0) =", ANDNOT(1, 0))
+print("ANDNOT(1, 1) =", ANDNOT(1, 1))
+
+<----- ANN3 ----->
+import numpy as np
+
+class Perceptron:
+    def __init__(self, input_size, learning_rate=0.01, epochs=100):
+        self.W = np.zeros(input_size+1)
+        self.learning_rate = learning_rate
+        self.epochs = epochs
+
+    def activation_fn(self, x):
+        return 1 if x >= 0 else 0
+
+    def predict(self, x):
+        x = np.insert(x, 0, 1)
+        z = self.W.dot(x)
+        a = self.activation_fn(z)
+        return a
+
+    def train(self, X, d):
+        for _ in range(self.epochs):
+            for i in range(d.shape[0]):
+                x = np.insert(X[i], 0, 1)
+                y = self.predict(X[i])
+                e = d[i] - y
+                self.W = self.W + self.learning_rate * e * x
+
+# Training data
+X_train = np.array([
+    [0, 0, 1, 1, 1, 1, 1, 0, 1, 1],  # '0' in ASCII representation
+    [0, 1, 1, 0, 0, 0, 1, 0, 1, 0],  # '1' in ASCII representation
+    [1, 1, 1, 1, 0, 0, 1, 0, 1, 1],  # '2' in ASCII representation
+    [1, 1, 1, 1, 0, 1, 1, 0, 0, 1],  # '3' in ASCII representation
+    [1, 0, 1, 1, 0, 1, 1, 0, 1, 0],  # '4' in ASCII representation
+    [1, 1, 0, 1, 1, 1, 1, 0, 0, 1],  # '5' in ASCII representation
+    [0, 1, 0, 1, 1, 1, 1, 1, 1, 1],  # '6' in ASCII representation
+    [1, 1, 1, 0, 0, 0, 1, 0, 0, 0],  # '7' in ASCII representation
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # '8' in ASCII representation
+    [1, 1, 1, 1, 1, 0, 1, 1, 1, 1]   # '9' in ASCII representation
+])
+
+# Desired outputs (1 for odd, 0 for even)
+d_train = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+
+# Create and train perceptron
+perceptron = Perceptron(input_size=10)
+perceptron.train(X_train, d_train)
+
+# Test data
+X_test = np.array([
+    [1, 1, 1, 0, 0, 0, 1, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1, 1, 0, 1, 0]
+])
+
+# Test perceptron
+for i in range(len(X_test)):
+    prediction = perceptron.predict(X_test[i])
+    if prediction == 0:
+        print("Even")
+    else:
+        print("Odd")
+<----- OR ANN3 ----->
+import numpy as np
+
+# Define the perceptron class
+class Perceptron:
+    def __init__(self, input_size):
+        self.weights = np.random.rand(input_size)
+        self.bias = np.random.rand()
+
+    def predict(self, inputs):
+        weighted_sum = np.dot(inputs, self.weights) + self.bias
+        return 1 if weighted_sum >= 0 else 0
+
+# Function to convert ASCII to binary representation
+def ascii_to_binary(ascii_value):
+    binary_rep = format(ascii_value, '08b')
+    return [int(bit) for bit in binary_rep]
+
+# Training data: ASCII values for digits 0 to 9
+training_data = {
+    '0': 48,
+    '1': 49,
+    '2': 50,
+    '3': 51,
+    '4': 52,
+    '5': 53,
+    '6': 54,
+    '7': 55,
+    '8': 56,
+    '9': 57
+}
+
+# Create a perceptron with input size of 8 (binary representation of ASCII values)
+perceptron = Perceptron(input_size=8)
+
+# Train the perceptron
+epochs = 1000
+learning_rate = 0.1
+
+for epoch in range(epochs):
+    for digit, ascii_value in training_data.items():
+        binary_input = np.array(ascii_to_binary(ascii_value))
+        target = 1 if int(digit) % 2 == 0 else 0  # 1 for even, 0 for odd
+        prediction = perceptron.predict(binary_input)
+
+        error = target - prediction
+        perceptron.weights += learning_rate * error * binary_input
+        perceptron.bias += learning_rate * error
+
+# Test the perceptron
+test_data = {
+    'Odd': [55, 49, 53],  # ASCII for '7', '1', '5' (odd numbers)
+    'Even': [50, 56, 52]  # ASCII for '2', '8', '4' (even numbers)
+}
+
+for label, ascii_values in test_data.items():
+    for ascii_value in ascii_values:
+        binary_input = np.array(ascii_to_binary(ascii_value))
+        prediction = perceptron.predict(binary_input)
+        print(f"Predicted label for ASCII {ascii_value}: {label} ({prediction})")
+
+
+<----- ANN4 ----->
+import numpy as np
+import matplotlib.pyplot as plt
+
+class Perceptron:
+    def __init__(self, learning_rate=0.1, epochs=100):
+        self.learning_rate = learning_rate
+        self.epochs = epochs
+
+    def train(self, X, y):
+        self.weights = np.zeros(X.shape[1] + 1)
+        for _ in range(self.epochs):
+            for xi, target in zip(X, y):
+                update = self.learning_rate * (target - self.predict(xi))
+                self.weights[1:] += update * xi
+                self.weights[0] += update
+
+    def predict(self, X):
+        summation = np.dot(X, self.weights[1:]) + self.weights[0]
+        return np.where(summation >= 0, 1, 0)  # Returns binary values, but we want class labels (0 or 1)
+
+# Generate random data points for two classes
+np.random.seed(0)
+num_samples = 100
+class_0 = np.random.normal(loc=[2, 2], scale=[1, 1], size=(num_samples, 2))
+class_1 = np.random.normal(loc=[6, 6], scale=[1, 1], size=(num_samples, 2))
+
+# Concatenate the data points and create labels
+X = np.vstack([class_0, class_1])
+y = np.hstack([np.zeros(num_samples), np.ones(num_samples)])
+
+# Create and train the perceptron
+perceptron = Perceptron(learning_rate=0.1, epochs=1000)
+perceptron.train(X, y)
+
+# Plot the data points for each class
+plt.figure(figsize=(8, 6))
+plt.scatter(class_0[:, 0], class_0[:, 1], color='blue', label='Class 0')
+plt.scatter(class_1[:, 0], class_1[:, 1], color='red', label='Class 1')
+
+# Plot the decision boundary
+w0, w1, w2 = perceptron.weights
+slope = -w1 / w2
+intercept = -w0 / w2
+x_boundary = np.linspace(np.min(X[:, 0]), np.max(X[:, 0]), 100)
+y_boundary = slope * x_boundary + intercept
+plt.plot(x_boundary, y_boundary, color='green', label='Decision Boundary')
+
+plt.title('Perceptron Decision Regions')
+plt.xlabel('X1')
+plt.ylabel('X2')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+<----- ANN5 ----->
+import numpy as np
+
+class BAM:
+    def __init__(self, pattern1, pattern2):
+        self.pattern1 = pattern1
+        self.pattern2 = pattern2
+        self.weights = np.dot(pattern1.T, pattern2)
+
+    def retrieve(self, pattern):
+        retrieved = np.dot(pattern, self.weights.T)
+        retrieved[retrieved >= 0] = 1
+        retrieved[retrieved < 0] = -1
+        return retrieved
+
+pattern1 = np.array([[1, -1, 1],
+                     [-1, 1, -1]])
+
+pattern2 = np.array([[1, 1, -1],
+                     [-1, -1, 1]])
+
+bam = BAM(pattern1, pattern2)
+
+retrieved_pattern1 = bam.retrieve(pattern1)
+print("Retrieved pattern 1:", retrieved_pattern1)
+
+retrieved_pattern2 = bam.retrieve(pattern2)
+print("Retrieved pattern 2:", retrieved_pattern2)
+
+<----- OR ANN5 ----->
+import numpy as np
+import matplotlib.pyplot as plt
+
+class BAM:
+    def __init__(self, input_size, output_size):
+        self.input_size = input_size
+        self.output_size = output_size
+        self.W = np.zeros((output_size, input_size))
+        self.T = np.zeros((input_size, output_size))
+
+    def train(self, X, Y):
+        for i in range(len(X)):
+            x = np.expand_dims(X[i], axis=0)
+            y = np.expand_dims(Y[i], axis=0)
+            self.W += np.dot(y.T, x)
+            self.T += np.dot(x.T, y)
+
+    def recall(self, x, max_iter=1000):
+        x = np.expand_dims(x, axis=0)
+        y_prev = np.zeros((1, self.output_size))
+        for _ in range(max_iter):
+            y = np.dot(x, self.W.T)
+            y = np.where(y >= 0, 1, -1)  # Threshold to bipolar values
+            x = np.dot(y, self.T.T)
+            x = np.where(x >= 0, 1, -1)  # Threshold to bipolar values
+            if np.array_equal(y, y_prev):
+                break
+            y_prev = y
+        return y
+
+# Example usage
+# Define input patterns (binary images of shapes)
+square = np.array([[1, 1, 1, 1, 1],
+                   [1, 0, 0, 0, 1],
+                   [1, 0, 0, 0, 1],
+                   [1, 0, 0, 0, 1],
+                   [1, 1, 1, 1, 1]])
+
+circle = np.array([[0, 1, 1, 1, 0],
+                   [1, 1, 1, 1, 1],
+                   [1, 1, 0, 1, 1],
+                   [1, 1, 1, 1, 1],
+                   [0, 1, 1, 1, 0]])
+
+triangle = np.array([[0, 0, 1, 0, 0],
+                     [0, 1, 0, 1, 0],
+                     [1, 0, 0, 0, 1],
+                     [0, 1, 0, 1, 0],
+                     [0, 0, 1, 0, 0]])
+
+input_patterns = np.array([square.flatten(), circle.flatten(), triangle.flatten()])
+
+# Define output patterns (labels)
+output_patterns = np.array([[1, -1, -1], [-1, 1, -1], [-1, -1, 1]])  # 1 for square, 1 for circle, 1 for triangle
+
+bam = BAM(input_size=input_patterns.shape[1], output_size=output_patterns.shape[1])
+bam.train(input_patterns, output_patterns)
+
+<----- ANN6 ----->
+import numpy as np
+
+training_data = {
+    0: np.array([[1, 1, 1],[1, 0, 1],[1, 0, 1],[1, 0, 1],[1, 1, 1]]),
+    1: np.array([[0, 1, 0],[0, 1, 0],[0, 1, 0],[0, 1, 0],[0, 1, 0]]),
+    2: np.array([[1, 1, 1],[0, 0, 1],[1, 1, 1],[1, 0, 0],[1, 1, 1]]),
+    3: np.array([[1, 1, 1],[0, 0, 1],[1, 1, 1],[0, 0, 1],[1, 1, 1]]),
+    4: np.array([[1, 0, 1],[1, 0, 1],[1, 1, 1],[0, 0, 1],[0, 0, 1]]),
+    5: np.array([[1, 1, 1],[1, 0, 0],[1, 1, 1],[0, 0, 1],[1, 1, 1]]),
+    6: np.array([[1, 1, 1],[1, 0, 0],[1, 1, 1],[1, 0, 1],[1, 1, 1]]),
+    7: np.array([[1, 1, 1],[0, 0, 1],[0, 0, 1],[0, 0, 1],[0, 0, 1]]),
+    8: np.array([[1, 1, 1],[1, 0, 1],[1, 1, 1],[1, 0, 1],[1, 1, 1]]),
+    9: np.array([[1, 1, 1],[1, 0, 1],[1, 1, 1],[0, 0, 1],[1, 1, 1]])
+}
+
+class NeuralNetwork:
+    def __init__(self):
+        self.weights = np.random.rand(15, 10)
+
+    def sigmoid(self, x):
+        return 1 / (1 + np.exp(-x))
+
+    def sigmoid_derivative(self, x):
+        return x * (1 - x)
+
+    def train(self, X, y, iterations):
+        for i in range(iterations):
+            output = self.predict(X)
+            error = y - output
+            adjustment = np.dot(X.T, error * self.sigmoid_derivative(output))
+            self.weights += adjustment
+
+    def predict(self, X):
+        return self.sigmoid(np.dot(X, self.weights))
+
+X_train = np.array([digit.flatten() for digit in training_data.values()])
+y_train = np.eye(10)
+
+nn = NeuralNetwork()
+nn.train(X_train, y_train, iterations=10000)
+
+def recognize_digit(input_digit, nn):
+    input_digit_flattened = input_digit.flatten()
+    output = nn.predict(input_digit_flattened)
+    recognized_digit = np.argmax(output)
+    return recognized_digit
+
+test_data = {
+    "0": np.array([[1, 1, 1],[1, 0, 1],[1, 0, 1],[1, 0, 1],[1, 1, 1]]),
+    "1": np.array([[0, 1, 0],[0, 1, 0],[0, 1, 0],[0, 1, 0],[0, 1, 0]]),
+    "2": np.array([[1, 1, 1],[0, 0, 1],[1, 1, 1],[1, 0, 0],[1, 1, 1]]),
+}
+
+for label, data in test_data.items():
+    recognized_digit = recognize_digit(data, nn)
+    print(f"Recognized {label}: {recognized_digit}")
+
+<----- ANN7 ----->
+import numpy as np
+
+# Define the activation function (sigmoid)
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+# Define the derivative of the activation function
+def sigmoid_derivative(x):
+    return x * (1 - x)
+
+# Define the XOR function
+def xor_data():
+    inputs = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+    outputs = np.array([[0], [1], [1], [0]])
+    return inputs, outputs
+
+# Initialize random weights for input layer to hidden layer and hidden layer to output layer
+input_size = 2
+hidden_size = 2
+output_size = 1
+hidden_weights = np.random.uniform(size=(input_size, hidden_size))
+output_weights = np.random.uniform(size=(hidden_size, output_size))
+
+# Training the neural network
+def train(inputs, outputs, epochs):
+    global hidden_weights, output_weights
+    for epoch in range(epochs):
+        # Forward propagation
+        hidden_layer_input = np.dot(inputs, hidden_weights)
+        hidden_layer_output = sigmoid(hidden_layer_input)
+        output_layer_input = np.dot(hidden_layer_output, output_weights)
+        predicted_output = sigmoid(output_layer_input)
+        
+        # Backpropagation
+        error = outputs - predicted_output
+        d_predicted_output = error * sigmoid_derivative(predicted_output)
+        error_hidden_layer = d_predicted_output.dot(output_weights.T)
+        d_hidden_layer = error_hidden_layer * sigmoid_derivative(hidden_layer_output)
+        
+        # Updating weights
+        output_weights += hidden_layer_output.T.dot(d_predicted_output)
+        hidden_weights += inputs.T.dot(d_hidden_layer)
+
+# Testing the neural network
+def test(inputs):
+    hidden_layer_input = np.dot(inputs, hidden_weights)
+    hidden_layer_output = sigmoid(hidden_layer_input)
+    output_layer_input = np.dot(hidden_layer_output, output_weights)
+    predicted_output = sigmoid(output_layer_input)
+    return predicted_output
+
+if __name__ == "__main__":
+    inputs, outputs = xor_data()
+    train(inputs, outputs, epochs=10000)
+    test_inputs = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+    print("XOR Prediction Results:")
+    for i in range(len(test_inputs)):
+        predicted_output = test(test_inputs[i])
+        print(f"Input: {test_inputs[i]}, Predicted Output: {round(predicted_output[0])}")
+
+<----- ANN8 ----->
+import numpy as np
+
+class ARTNetwork:
+    def __init__(self, input_size, vigilance_parameter):
+        self.input_size = input_size
+        self.vigilance_parameter = vigilance_parameter
+        self.W = None
+        self.reset()
+
+    def reset(self):
+        self.W = np.random.rand(self.input_size)
+
+    def normalize(self, X):
+        norm = np.linalg.norm(X)
+        if norm == 0:
+            return X
+        return X / norm
+
+    def match(self, X):
+        return np.dot(self.W, self.normalize(X))
+
+    def learn(self, X, max_iterations=100):
+        for _ in range(max_iterations):
+            y = self.match(X)
+            if y >= self.vigilance_parameter:
+                return True
+            else:
+                # Update the weights based on the input pattern
+                self.W += X
+                self.W = self.normalize(self.W)
+        return False
+
+# Example usage:
+input_size = 4
+vigilance_parameter = 0.9
+art_net = ARTNetwork(input_size, vigilance_parameter)
+
+# Training data
+data = [[0, 0, 0, 0],[0, 0, 1, 1],[0, 1, 0, 1],[0, 1, 1, 0],[1, 0, 0, 1],[1, 0, 1, 0],[1, 1, 0, 0],[1, 1, 1, 1]]
+
+# Training the ART network
+for pattern in data:
+    art_net.learn(pattern)
+
+# Test the ART network
+test_patterns = [[0, 0, 1, 1],[1, 1, 1, 1],[0, 1, 0, 0],[1, 0, 1, 0]]
+
+print("Test Results:")
+for pattern in test_patterns:
+    match = art_net.match(pattern)
+    print(f"Pattern: {pattern}, Match: {match}")
+
+<----- ANN9 ----->
+import numpy as np
+
+class NeuralNetwork:
+    def __init__(self, input_size, hidden_size, output_size, learning_rate=0.1):
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+        self.learning_rate = learning_rate
+
+        # Initialize weights and biases
+        np.random.seed(42)  # for reproducibility
+        self.weights_input_hidden = np.random.randn(self.input_size, self.hidden_size)
+        self.bias_hidden = np.random.randn(1, self.hidden_size)
+        self.weights_hidden_output = np.random.randn(self.hidden_size, self.output_size)
+        self.bias_output = np.random.randn(1, self.output_size)
+
+    def sigmoid(self, x):
+        return 1 / (1 + np.exp(-x))
+
+    def sigmoid_derivative(self, x):
+        return x * (1 - x)
+
+    def forward_propagation(self, X):
+        # Input to hidden layer
+        self.hidden_input = np.dot(X, self.weights_input_hidden) + self.bias_hidden
+        self.hidden_output = self.sigmoid(self.hidden_input)
+        # Hidden layer to output
+        self.output_input = np.dot(self.hidden_output, self.weights_hidden_output) + self.bias_output
+        self.output = self.sigmoid(self.output_input)
+        return self.output
+
+    def backpropagation(self, X, y):
+        # Calculate output layer error
+        error_output = y - self.output
+        delta_output = error_output * self.sigmoid_derivative(self.output)
+        # Calculate hidden layer error
+        error_hidden = delta_output.dot(self.weights_hidden_output.T)
+        delta_hidden = error_hidden * self.sigmoid_derivative(self.hidden_output)
+        # Update weights
+        self.weights_hidden_output += self.hidden_output.T.dot(delta_output) * self.learning_rate
+        self.weights_input_hidden += X.T.dot(delta_hidden) * self.learning_rate
+        # Update biases
+        self.bias_output += np.sum(delta_output, axis=0, keepdims=True) * self.learning_rate
+        self.bias_hidden += np.sum(delta_hidden, axis=0, keepdims=True) * self.learning_rate
+
+    def train(self, X, y, epochs):
+        for epoch in range(epochs):
+            # Forward propagation
+            output = self.forward_propagation(X)
+            # Backpropagation
+            self.backpropagation(X, y)
+
+# Example usage:
+X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])  # Input
+y = np.array([[0], [1], [1], [0]])  # Output
+epochs = 10000
+# Initialize neural network
+input_size = 2
+hidden_size = 3
+output_size = 1
+learning_rate = 0.1
+nn = NeuralNetwork(input_size, hidden_size, output_size, learning_rate)
+# Train the neural network
+nn.train(X, y, epochs)
+# Predict
+predictions = nn.forward_propagation(X)
+print("Predictions after training:")
+for i in range(len(X)):
+    print(f"Input: {X[i]}, Target: {y[i]}, Prediction: {predictions[i]}")
+
+<----- ANN10 ----->
+import numpy as np
+
+class HopfieldNetwork:
+    def __init__(self, num_neurons):
+        self.num_neurons = num_neurons
+        self.weights = np.zeros((num_neurons, num_neurons))
+    
+    def train(self, patterns):
+        num_patterns = len(patterns)
+        for pattern in patterns:
+            pattern = np.reshape(pattern, (1, self.num_neurons))
+            self.weights += np.dot(pattern.T, pattern)
+        np.fill_diagonal(self.weights, 0)
+    
+    def recall(self, pattern, max_iterations=100):
+        pattern = np.reshape(pattern, (1, self.num_neurons))
+        for _ in range(max_iterations):
+            prev_pattern = np.copy(pattern)
+            pattern = np.sign(np.dot(pattern, self.weights))
+            if np.array_equal(pattern, prev_pattern):
+                break
+        return pattern
+
+# Define the patterns to be stored
+patterns = [[1, 1, 1, -1],[-1, -1, 1, 1],[1, -1, -1, -1],[-1, 1, -1, -1]]
+
+# Create a Hopfield Network with 4 neurons
+num_neurons = len(patterns[0])
+hopfield_net = HopfieldNetwork(num_neurons)
+
+# Train the network with the patterns
+hopfield_net.train(patterns)
+
+dirty_patterns = [[1, 1, 1, 1],[-1, -1, -1, 1],[1, -1, -1, -1],[-1, 1, 1, -1]]
+
+# Recall patterns
+for pattern in dirty_patterns:
+    recalled_pattern = hopfield_net.recall(pattern)
+    print("Original pattern:", pattern)
+    print("Recalled pattern:", recalled_pattern[0])
+    print()
+
+<----- ANN11 ----->
+import tensorflow as tf
+from tensorflow.keras.datasets import fashion_mnist
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Flatten
+from tensorflow.keras.utils import to_categorical
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+# Load MNIST dataset
+(train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
+
+# Normalize the images
+train_images = train_images / 255.0
+test_images = test_images / 255.0
+
+# Reshape images to 1D arrays
+train_images = train_images.reshape((-1, 28 * 28))
+test_images = test_images.reshape((-1, 28 * 28))
+
+# One-hot encode labels
+train_labels = to_categorical(train_labels)
+test_labels = to_categorical(test_labels)
+
+# Build and compile the neural network model
+model = Sequential([
+    Flatten(input_shape=(28 * 28,)),  # Flatten the input images
+    Dense(128, activation='relu'),    # Hidden layer with 128 units
+    Dense(10, activation='softmax')   # Output layer with 10 units (for 10 classes)
+])
+
+model.compile(optimizer='adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Train the neural network model
+model.fit(train_images, train_labels, epochs=5, batch_size=32, validation_split=0.2)
+
+test_loss, test_accuracy = model.evaluate(test_images, test_labels)
+print(f"Test accuracy (Neural Network): {test_accuracy*100:.2f}%")
+
+# Build and compile the logistic regression model
+logistic_model = Sequential([
+    Flatten(input_shape=(28 * 28,)),   # Flatten the input images
+    Dense(10, activation='sigmoid')     # Output layer with 10 units and sigmoid activation
+])
+
+logistic_model.compile(optimizer='adam',
+                       loss='categorical_crossentropy',
+                       metrics=['accuracy'])
+
+# Train the logistic regression model
+logistic_model.fit(train_images, train_labels, epochs=5, batch_size=32, validation_split=0.2)
+
+# Evaluate the logistic regression model
+test_loss_logistic, test_accuracy_logistic = logistic_model.evaluate(test_images, test_labels)
+print(f"Test accuracy (Logistic Regression): {test_accuracy_logistic*100:.2f}%")
+
+
+# Choose a random image from test dataset
+index = np.random.randint(0, len(test_images))
+image = test_images[index].reshape((28, 28))  # Reshape to 28x28
+true_label = np.argmax(test_labels[index])
+
+# Predict using the neural network model
+nn_prediction = np.argmax(model.predict(np.expand_dims(test_images[index], axis=0)))
+
+# Predict using the logistic regression model
+logistic_prediction = np.argmax(logistic_model.predict(np.expand_dims(test_images[index], axis=0)))
+
+plt.imshow(image, cmap='gray')
+plt.title(f"True Label: {true_label}, NN Prediction: {nn_prediction}, Logistic Prediction: {logistic_prediction}")
+plt.axis('off')
+plt.show()
+
+
+<----- ANN12 ----->
+import tensorflow as tf
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
+from tensorflow.keras.utils import to_categorical
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load MNIST dataset
+(train_images, train_labels), (test_images, test_labels) = mnist.load_data()
+
+# Normalize and reshape the images
+train_images = train_images.reshape((-1, 28, 28, 1)) / 255.0
+test_images = test_images.reshape((-1, 28, 28, 1)) / 255.0
+
+# One-hot encode labels
+train_labels = to_categorical(train_labels)
+test_labels = to_categorical(test_labels)
+
+# Build the CNN model
+model = Sequential([
+    Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),  # Convolutional layer with 32 filters and 3x3 kernel
+    MaxPooling2D((2, 2)),  # Max pooling layer with 2x2 pool size
+    Conv2D(64, (3, 3), activation='relu'),  # Convolutional layer with 64 filters and 3x3 kernel
+    MaxPooling2D((2, 2)),  # Max pooling layer with 2x2 pool size
+    Flatten(),  # Flatten layer to convert 2D features to 1D
+    Dense(128, activation='relu'),  # Fully connected layer with 128 neurons
+    Dense(10, activation='softmax')  # Output layer with 10 neurons for 10 classes
+])
+
+# Compile the model
+model.compile(optimizer='adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Train the model
+model.fit(train_images, train_labels, epochs=5, batch_size=32, validation_split=0.2)
+
+
+# Evaluate the model
+test_loss, test_accuracy = model.evaluate(test_images, test_labels)
+print(f"Test accuracy (CNN): {test_accuracy*100:.2f}%")
+
+# Choose a random image from test dataset
+index = np.random.randint(0, len(test_images))
+image = test_images[index].reshape((28, 28))  # Reshape to 28x28
+true_label = np.argmax(test_labels[index])
+
+# Reshape and predict using the CNN model
+cnn_prediction = np.argmax(model.predict(np.expand_dims(test_images[index], axis=0)))
+
+# Plot the image and display true and predicted labels
+plt.imshow(image, cmap='gray')
+plt.title(f"True Label: {true_label}, CNN Prediction: {cnn_prediction}")
+plt.axis('off')
+plt.show()
+
+
+<----- ANN13 ----->
+
+import tensorflow as tf
+import numpy as np
+import matplotlib.pyplot as plt
+from tensorflow.keras.datasets import fashion_mnist
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout, BatchNormalization
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.callbacks import LearningRateScheduler
+
+
+# Load Fashion MNIST dataset
+(train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
+
+# Normalize and reshape the images
+train_images = train_images.reshape((-1, 28, 28, 1)) / 255.0
+test_images = test_images.reshape((-1, 28, 28, 1)) / 255.0
+
+# One-hot encode labels
+train_labels = to_categorical(train_labels)
+test_labels = to_categorical(test_labels)
+
+# Data Augmentation
+datagen = ImageDataGenerator(rotation_range=20, width_shift_range=0.2, height_shift_range=0.2, zoom_range=0.2)
+datagen.fit(train_images)
+
+# Build the CNN model with improvements
+model = Sequential([
+    Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+    BatchNormalization(),
+    MaxPooling2D((2, 2)),
+    Dropout(0.25),
+    
+    Conv2D(64, (3, 3), activation='relu'),
+    BatchNormalization(),
+    MaxPooling2D((2, 2)),
+    Dropout(0.25),
+    
+    Flatten(),
+    Dense(128, activation='relu'),
+    BatchNormalization(),
+    Dropout(0.5),
+    Dense(10, activation='softmax')
+])
+
+# Learning Rate Scheduler
+def lr_scheduler(epoch, lr):
+    if epoch % 10 == 0 and epoch != 0:
+        return lr * 0.9
+    else:
+        return lr
+
+lr_schedule = LearningRateScheduler(lr_scheduler)
+
+
+
+model.compile(optimizer='adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Train the model
+history = model.fit(datagen.flow(train_images, train_labels, batch_size=32),
+                    epochs=20,
+                    validation_data=(test_images, test_labels),
+                    callbacks=[lr_schedule])
+
+
+
+# Evaluate the model
+test_loss, test_accuracy = model.evaluate(test_images, test_labels)
+print(f"Test accuracy (CNN): {test_accuracy*100:.2f}%")
+
+# Plotting accuracy and loss
+plt.figure(figsize=(12, 4))
+
+# Plot training & validation accuracy values
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'], label='Training Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.title('Training and Validation Accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+
+# Plot training & validation loss values
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'], label='Training Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.title('Training and Validation Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+import numpy as np
+import matplotlib.pyplot as plt
+# Choose a random image from test dataset
+for _ in range(0,10):
+    index = np.random.randint(0, len(test_images))
+    image = test_images[index].reshape((28, 28))  # Reshape to 28x28
+    true_label = np.argmax(test_labels[index])
+
+    # Predict using the CNN model
+    predictions = model.predict(np.expand_dims(test_images[index], axis=0))
+    predicted_label = np.argmax(predictions)
+
+    # Plot the image and display true and predicted labels
+    plt.imshow(image, cmap='gray')
+    plt.title(f"True Label: {true_label}, Predicted Label: {predicted_label}")
+    plt.axis('off')
+    plt.show()
+
+    # Display prediction probabilities
+    print("Prediction Probabilities:")
+    for i, prob in enumerate(predictions[0]):
+        print(f"Class {i}: {prob*100:.2f}%")
+
